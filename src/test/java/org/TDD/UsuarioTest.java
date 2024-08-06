@@ -16,6 +16,7 @@ public class UsuarioTest {
     /**
      * @Description Testa a criação do objeto usuario,
      */
+
     @Test
     public void criacaoUsuarioTest() {
         String nome = "Yuri Alberto";
