@@ -1,29 +1,31 @@
 package org.TDD;
 
-import org.TDD.entity.Usuario;
-import org.TDD.interfaces.iUsuario;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * @author Franciel Soumbra
- */
+import static org.junit.Assert.assertTrue;
 
 public class UsuarioTest {
-    public UsuarioTest() {}
+    UsuarioTest() {};
 
     /**
-     * @Description Testa a criação do objeto usuario,
+     * @Description Testa a senha do usuario!
+        Devem ter entre 8 e 20 caracteres.
+        Devem conter pelo menos um caractere especial definido.
+        Devem conter pelo menos um dígito.
+        Devem conter pelo menos uma letra.
+        Não podem conter outros caracteres além dos definidos.
      */
+
     @Test
-    public void criacaoUsuarioTest() {
-        String nome = "Yuri Alberto";
-        String email = "yuri9alb@gmail.com";
-        String senha = "yuri1910";
+    public void verificaSenhaUsuarioisValidoTest() {
+        String senha = "rober3tosom";
+        String regex = "^(?=.*[@!#$%^&*()/\\]])(?=.*[0-9])(?=.*[a-zA-Z])[@!#$%^&*()/\\]a-zA-Z0-9]{8,20}$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(senha);
 
-        iUsuario usuario = new Usuario(nome, email, senha);
-
-        assertEquals(nome, usuario.getNome());
+        assertTrue(senha.length() >= 8 && matcher.find());
     }
 }
