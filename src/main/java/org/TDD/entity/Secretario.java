@@ -16,6 +16,5 @@ public class Secretario extends Usuario {
 
     public void setSiape(int siape) {
         this.siape = siape;
-        Secretario sec = new Secretario(1, "h", "h", "h");
     }
 }
