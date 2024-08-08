@@ -45,13 +45,7 @@ public class Sala implements iSala {
     }
 
     @Override
-    public void setNumero(String numero) {
-
-    }
-
-    public void setNumero(int numero) {
-        this.numero = numero;
-    }
+    public void setNumero(int numero) { this.numero = numero; }
 
     @Override
     public Boolean getProjetor() {
@@ -69,8 +63,8 @@ public class Sala implements iSala {
     }
 
     @Override
-    public Boolean setArCondicionado(Boolean arCondicionado) {
-        return this.arcondicionado = arCondicionado;
+    public void setArCondicionado(Boolean arCondicionado) {
+        this.arcondicionado = arCondicionado;
     }
 
     @Override

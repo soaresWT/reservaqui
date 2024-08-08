@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 public class SalaTest {
 
     @Test
-    public void getBloco_shouldReturnCorrectValue() {
+    public void getBloco_RetornarValorCorreto() {
 
         Sala sala = new Sala("Bloco 4", "Terreo", 1, true, true, 30);
 
@@ -16,7 +16,7 @@ public class SalaTest {
     }
 
     @Test
-    public void getProjetor_shouldReturnCorrectValue() {
+    public void getProjetor_RetornarValorCorreto() {
 
         Sala sala = new Sala("Bloco 4", "Terreo", 1, true, true, 30);
 

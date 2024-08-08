@@ -8,7 +8,7 @@ public interface iSala {
     void setAndar(String andar);
 
     int getNumero();
-    void setNumero(String numero);
+    void setNumero(int numero);
 
     int getCapacidade();
     void setCapacidade(int capacidade);
@@ -17,5 +17,5 @@ public interface iSala {
     void setProjetor(Boolean projetor);
 
     Boolean getArCondicionado();
-    Boolean setArCondicionado(Boolean arCondicionado);
+    void setArCondicionado(Boolean arCondicionado);
 }
