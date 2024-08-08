@@ -9,5 +9,5 @@ public interface UsuarioDAO {
 
     void delete();
 
-    void findById(int id);
+    void findUsuarioById(int id);
 }
