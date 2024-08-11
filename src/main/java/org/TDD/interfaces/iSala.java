@@ -7,8 +7,8 @@ public interface iSala {
     String getAndar();
     void setAndar(String andar);
 
-    String getNumero();
-    void setNumero(String numero);
+    int getNumero();
+    void setNumero(int numero);
 
     int getCapacidade();
     void setCapacidade(int capacidade);
