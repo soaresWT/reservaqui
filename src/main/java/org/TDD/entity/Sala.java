@@ -9,7 +9,8 @@ public class Sala implements iSala {
     private Boolean projetor;
     private Boolean arcondicionado;
     private int capacidade;
-
+    public Sala() {
+    }
     public Sala(String bloco, String andar, int numero, Boolean projetor, Boolean arcondicionado, int capacidade) {
         this.bloco = bloco;
         this.andar = andar;
