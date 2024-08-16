@@ -12,7 +12,11 @@ public class Reserva implements iReserva {
     private iSala sala;
     private Date dataInicio;
     private Date dataFim;
+    private StatusReserva status;
 
+    public Reserva() {
+        this.status = StatusReserva.PROCESSANDO;
+    }
     @Override
     public iSala getSala() {
         return sala;
@@ -51,6 +55,16 @@ public class Reserva implements iReserva {
     @Override
     public void setDataFim(Date dataFim) {
         this.dataFim = dataFim;
+    }
+
+    @Override
+    public StatusReserva getStatus() {
+        return status;
+    }
+
+    @Override
+    public void setStatus(StatusReserva status) {
+        this.status = status;
     }
 
     public void validarReserva() {

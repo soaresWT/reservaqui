@@ -1,5 +1,7 @@
 package org.TDD.interfaces;
 
+import org.TDD.entity.StatusReserva;
+
 import java.util.Date;
 
 public interface iReserva {
@@ -14,4 +16,7 @@ public interface iReserva {
 
     Date getDataFim();
     void setDataFim(Date dataFim);
+
+    StatusReserva getStatus();
+    void setStatus(StatusReserva status);
 }

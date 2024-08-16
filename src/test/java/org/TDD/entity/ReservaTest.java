@@ -11,6 +11,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -27,19 +28,16 @@ class ReservaTest {
 
     @BeforeEach
     void setUp() {
-        // Inicializa os mocks
-        MockitoAnnotations.openMocks(this);
-
         reserva = new Reserva();
         mockUsuario = mock(iUsuario.class);
         mockSala = mock(iSala.class);
         dataInicio = new Date();
         dataFim = new Date();
-
-        // Cria um mock do serviço de e-mail e inicializa o ReservaService com ele
-        emailServiceMock = mock(iEmailService.class);
+        emailServiceMock = mock(iEmailService.class); // Corrigido para o mesmo nome
         reservaService = new ReservaService(emailServiceMock);
+        reset(emailServiceMock); // Limpa chamadas anteriores
     }
+
 
     @Test
     void testSetAndGetResponsavel() {
@@ -67,32 +65,26 @@ class ReservaTest {
 
     @Test
     void deveLancarExcecaoSeConflitoDeHorarioForDetectado() {
-        // Cria uma instância fictícia de iSala
         iSala sala = mock(iSala.class);
         when(sala.toString()).thenReturn("Bloco A, Andar 1, 101");
 
-        // Cria uma instância fictícia de iUsuario com um e-mail
         iUsuario usuario = mock(iUsuario.class);
         when(usuario.getEmail()).thenReturn("test@example.com");
 
-        // Cria a primeira reserva com conflito
         iReserva reserva1 = new Reserva();
         reserva1.setSala(sala);
-        reserva1.setResponsavel(usuario); // Garante que o responsável está configurado
+        reserva1.setResponsavel(usuario);
         reserva1.setDataInicio(new Date(System.currentTimeMillis()));
-        reserva1.setDataFim(new Date(System.currentTimeMillis() + 100000)); // +100 segundos
+        reserva1.setDataFim(new Date(System.currentTimeMillis() + 100000));
 
-        // Cria a segunda reserva que vai gerar um conflito
         iReserva reserva2 = new Reserva();
         reserva2.setSala(sala);
-        reserva2.setResponsavel(usuario); // Garante que o responsável está configurado
+        reserva2.setResponsavel(usuario);
         reserva2.setDataInicio(new Date(System.currentTimeMillis() + 50000));
-        reserva2.setDataFim(new Date(System.currentTimeMillis() + 150000)); // +150 segundos
+        reserva2.setDataFim(new Date(System.currentTimeMillis() + 150000));
 
-        // Cadastra a primeira reserva
         reservaService.cadastrar(reserva1);
 
-        // Verifica se uma exceção é lançada ao tentar cadastrar a segunda reserva
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             reservaService.cadastrar(reserva2);
         });
@@ -102,35 +94,59 @@ class ReservaTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
     }
-
     @Test
-    void deveEnviarEmailAoCadastrarReserva() {
-        // Cria uma instância fictícia de iUsuario com um e-mail
-        iUsuario usuario = mock(iUsuario.class);
-        when(usuario.getEmail()).thenReturn("test@example.com");
-
-        // Cria uma instância fictícia de iSala
+    void deveCancelarReserva() {
         iSala sala = mock(iSala.class);
         when(sala.toString()).thenReturn("Bloco A, Andar 1, 101");
 
-        // Cria uma reserva fictícia
+        iUsuario usuario = mock(iUsuario.class);
+        when(usuario.getEmail()).thenReturn("test@example.com");
+
+        iReserva reserva = new Reserva();
+        reserva.setSala(sala);
+        reserva.setResponsavel(usuario);
+        reserva.setDataInicio(new Date(System.currentTimeMillis()));
+        reserva.setDataFim(new Date(System.currentTimeMillis() + 100000));
+
+        reservaService.cadastrar(reserva);
+
+        reservaService.cancelar(reserva);
+
+        assertFalse(reservaService.getReservas().contains(reserva));
+
+        ArgumentCaptor<String> destinatarioCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> assuntoCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> corpoCaptor = ArgumentCaptor.forClass(String.class);
+
+        verify(emailServiceMock, times(2)).enviarEmail(destinatarioCaptor.capture(), assuntoCaptor.capture(), corpoCaptor.capture());
+
+        assertEquals("test@example.com", destinatarioCaptor.getValue());
+        assertEquals("Cancelamento de Reserva", assuntoCaptor.getValue());
+        assertTrue(corpoCaptor.getValue().contains("Sua reserva para a sala Bloco A, Andar 1, 101 foi cancelada."));
+    }
+
+    @Test
+    void deveEnviarEmailAoCadastrarReserva() {
+        iUsuario usuario = mock(iUsuario.class);
+        when(usuario.getEmail()).thenReturn("test@example.com");
+
+        iSala sala = mock(iSala.class);
+        when(sala.toString()).thenReturn("Bloco A, Andar 1, 101");
+
         iReserva reserva = new Reserva();
         reserva.setResponsavel(usuario);
         reserva.setSala(sala);
         reserva.setDataInicio(new Date(System.currentTimeMillis()));
-        reserva.setDataFim(new Date(System.currentTimeMillis() + 100000)); // +100 segundos
+        reserva.setDataFim(new Date(System.currentTimeMillis() + 100000));
 
-        // Cadastra a reserva
         reservaService.cadastrar(reserva);
 
-        // Verifica se o serviço de e-mail foi chamado
         ArgumentCaptor<String> destinatarioCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> assuntoCaptor = ArgumentCaptor.forClass(String.class);
         ArgumentCaptor<String> corpoCaptor = ArgumentCaptor.forClass(String.class);
 
         verify(emailServiceMock).enviarEmail(destinatarioCaptor.capture(), assuntoCaptor.capture(), corpoCaptor.capture());
 
-        // Verifica os valores capturados
         assertEquals("test@example.com", destinatarioCaptor.getValue());
         assertEquals("Confirmação de Reserva", assuntoCaptor.getValue());
         assertTrue(corpoCaptor.getValue().contains("Sua reserva para a sala Bloco A, Andar 1, 101 foi confirmada."));
@@ -138,32 +154,59 @@ class ReservaTest {
 
     @Test
     void naoDeveLancarExcecaoSeNaoHouverConflitoDeHorario() {
-        // Cria uma instância fictícia de iSala
         iSala sala = mock(iSala.class);
         when(sala.toString()).thenReturn("Bloco A, Andar 1, 101");
 
-        // Cria uma instância fictícia de iUsuario com um e-mail
         iUsuario usuario = mock(iUsuario.class);
         when(usuario.getEmail()).thenReturn("test@example.com");
 
-        // Cria a primeira reserva sem conflito
         iReserva reserva1 = new Reserva();
         reserva1.setSala(sala);
-        reserva1.setResponsavel(usuario); // Garante que o responsável está configurado
+        reserva1.setResponsavel(usuario);
         reserva1.setDataInicio(new Date(System.currentTimeMillis()));
-        reserva1.setDataFim(new Date(System.currentTimeMillis() + 100000)); // +100 segundos
+        reserva1.setDataFim(new Date(System.currentTimeMillis() + 100000));
 
-        // Cria a segunda reserva sem conflito
         iReserva reserva2 = new Reserva();
         reserva2.setSala(sala);
-        reserva2.setResponsavel(usuario); // Garante que o responsável está configurado
+        reserva2.setResponsavel(usuario);
         reserva2.setDataInicio(new Date(System.currentTimeMillis() + 200000));
-        reserva2.setDataFim(new Date(System.currentTimeMillis() + 300000)); // +300 segundos
+        reserva2.setDataFim(new Date(System.currentTimeMillis() + 300000));
 
-        // Cadastra a primeira reserva
         reservaService.cadastrar(reserva1);
 
-        // Tenta cadastrar a segunda reserva e verifica que não há exceção
         assertDoesNotThrow(() -> reservaService.cadastrar(reserva2));
     }
+
+    @Test
+    void deveBuscarReservasPorIntervalo() {
+        // Configura as datas
+        Date agora = new Date();
+        Date inicio = new Date(agora.getTime() - 3600000); // 1 hora atrás
+        Date fim = new Date(agora.getTime() + 3600000); // 1 hora à frente
+
+        // Cria e adiciona reservas
+        iUsuario usuario = mock(iUsuario.class);
+        when(usuario.getEmail()).thenReturn("test@example.com");
+
+        iReserva reserva1 = new Reserva();
+        reserva1.setResponsavel(usuario);
+        reserva1.setDataInicio(new Date(agora.getTime() - 1800000)); // 30 minutos atrás
+        reserva1.setDataFim(new Date(agora.getTime() + 1800000)); // 30 minutos à frente
+        reservaService.cadastrar(reserva1);
+
+        iReserva reserva2 = new Reserva();
+        reserva2.setResponsavel(usuario);
+        reserva2.setDataInicio(new Date(agora.getTime() + 1800000)); // 30 minutos à frente
+        reserva2.setDataFim(new Date(agora.getTime() + 5400000)); // 90 minutos à frente
+        reservaService.cadastrar(reserva2);
+
+        // Chama o método de busca
+        List<iReserva> reservas = reservaService.buscarReservasPorIntervalo(inicio, fim);
+
+        // Verifica o resultado
+        assertTrue(reservas.contains(reserva1));
+        assertTrue(reservas.contains(reserva2));
+        assertEquals(2, reservas.size());
+    }
+
 }

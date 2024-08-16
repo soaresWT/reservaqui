@@ -5,7 +5,9 @@ import org.TDD.services.iEmailService;
 import org.TDD.entity.Reserva;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReservaService {
     private List<iReserva> reservas = new ArrayList<>();
@@ -19,10 +21,21 @@ public class ReservaService {
     public void cadastrar(iReserva novaReserva) {
         verificarConflitos(novaReserva);
         reservas.add(novaReserva);
+        enviarEmailDeConfirmacao(novaReserva);
+    }
+
+
+
+    public void cancelar(iReserva reserva) {
+        reservas.remove(reserva);
+        enviarEmailDeCancelamento(reserva);
+    }
+
+    private void enviarEmailDeCancelamento(iReserva reserva) {
         emailService.enviarEmail(
-                novaReserva.getResponsavel().getEmail(), // Assumindo que iUsuario tem um método getEmail
-                "Confirmação de Reserva",
-                "Sua reserva para a sala " + novaReserva.getSala() + " foi confirmada."
+                reserva.getResponsavel().getEmail(),
+                "Cancelamento de Reserva",
+                "Sua reserva para a sala " + reserva.getSala() + " foi cancelada."
         );
     }
 
@@ -41,7 +54,13 @@ public class ReservaService {
             }
         }
     }
-
+    private void enviarEmailDeConfirmacao(iReserva reserva) {
+        emailService.enviarEmail(
+                reserva.getResponsavel().getEmail(),
+                "Confirmação de Reserva",
+                "Sua reserva para a sala " + reserva.getSala() + " foi confirmada."
+        );
+    }
     private boolean reservasConflitam(iReserva reservaExistente, iReserva novaReserva) {
         // Certifique-se de que as datas não são null
         return reservaExistente.getDataInicio() != null &&
@@ -50,6 +69,12 @@ public class ReservaService {
                 novaReserva.getDataFim() != null &&
                 novaReserva.getDataInicio().before(reservaExistente.getDataFim()) &&
                 novaReserva.getDataFim().after(reservaExistente.getDataInicio());
+    }
+
+    public List<iReserva> buscarReservasPorIntervalo(Date inicio, Date fim) {
+        return reservas.stream()
+                .filter(reserva -> reserva.getDataInicio().before(fim) && reserva.getDataFim().after(inicio))
+                .collect(Collectors.toList());
     }
 
     public List<iReserva> getReservas() {
