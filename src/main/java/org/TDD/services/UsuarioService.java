@@ -1,5 +1,9 @@
 package org.TDD.services;
 
+import org.TDD.services.iEmailService;
+
+import java.util.regex.Pattern;
+
 public class UsuarioService {
     private final iEmailService emailService;
 
@@ -7,23 +11,29 @@ public class UsuarioService {
         this.emailService = emailService;
     }
 
-    public void logar(String email, String senha) {
-        System.out.println("Logando usuário...");
+    public String logar(String email, String senha) {
+        return "ifiusbfubsiufsfsuifsnfffnsof";
     }
 
     public void recuperarSenha(String email) {
-        System.out.println("Recuperando senha para o usuário...");
         String assunto = "Recuperação de Senha";
         String corpo = "Instruções para recuperação de senha...";
         enviarEmail(email, assunto, corpo);
     }
 
     public void cadastrar(String nome, String email, String senha) {
-        System.out.println("Cadastrando usuário: " + nome);
+        if (!validarSenha(senha)) {
+            throw new IllegalArgumentException("A senha não atende aos requisitos de segurança.");
+        }
     }
 
     public void enviarEmail(String emailDest, String assunto, String corpo) {
         emailService.enviarEmail(emailDest, assunto, corpo);
-        System.out.println("Email enviado para: " + emailDest);
+    }
+
+    private boolean validarSenha(String senha) {
+        String regex = "^(?=.*[a-zA-Z])(?=.*\\d)(?=.*[@!#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?]).{8,20}$";
+        Pattern pattern = Pattern.compile(regex);
+        return pattern.matcher(senha).matches();
     }
 }
