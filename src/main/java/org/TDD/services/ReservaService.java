@@ -25,7 +25,6 @@ public class ReservaService {
     }
 
 
-
     public void cancelar(iReserva reserva) {
         reservas.remove(reserva);
         enviarEmailDeCancelamento(reserva);

@@ -1,18 +1,31 @@
 package org.TDD.dao;
 
+import org.TDD.Database.DatabaseConnection;
 import org.TDD.entity.Usuario;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UsuarioDAO {
+    private static UsuarioDAO instance;
 
-    private static final String JDBC_URL = "jdbc:sqlite:src/db/reserveaqui.db";
+    // Construtor privado para garantir que não haja instâncias externas
+    public UsuarioDAO() { }
+
+    // Método estático para obter a instância única
+    public static synchronized UsuarioDAO getInstance() {
+        if (instance == null) {
+            instance = new UsuarioDAO();
+        }
+        return instance;
+    }
 
     private Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(JDBC_URL);
+        return DatabaseConnection.getInstance().getConnection();
     }
 
     public void inserirUsuario(Usuario usuario) {
@@ -36,6 +49,7 @@ public class UsuarioDAO {
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 return new Usuario(
+                        resultSet.getInt("id"),
                         resultSet.getString("nome"),
                         resultSet.getString("email"),
                         resultSet.getString("senha")
@@ -69,5 +83,26 @@ public class UsuarioDAO {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    public List<Usuario> listarTodos() {
+        String sql = "SELECT * FROM usuarios";
+        List<Usuario> usuarios = new ArrayList<>();
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                usuarios.add(new Usuario(
+                        resultSet.getInt("id"),
+                        resultSet.getString("nome"),
+                        resultSet.getString("email"),
+                        resultSet.getString("senha")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return usuarios;
     }
 }
