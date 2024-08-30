@@ -94,6 +94,7 @@ class ReservaTest {
 
         assertTrue(actualMessage.contains(expectedMessage));
     }
+
     @Test
     void deveCancelarReserva() {
         iSala sala = mock(iSala.class);
