@@ -180,12 +180,10 @@ class ReservaTest {
 
     @Test
     void deveBuscarReservasPorIntervalo() {
-        // Configura as datas
         Date agora = new Date();
         Date inicio = new Date(agora.getTime() - 3600000); // 1 hora atrás
         Date fim = new Date(agora.getTime() + 3600000); // 1 hora à frente
 
-        // Cria e adiciona reservas
         iUsuario usuario = mock(iUsuario.class);
         when(usuario.getEmail()).thenReturn("test@example.com");
 
@@ -201,10 +199,8 @@ class ReservaTest {
         reserva2.setDataFim(new Date(agora.getTime() + 5400000)); // 90 minutos à frente
         reservaService.cadastrar(reserva2);
 
-        // Chama o método de busca
         List<iReserva> reservas = reservaService.buscarReservasPorIntervalo(inicio, fim);
 
-        // Verifica o resultado
         assertTrue(reservas.contains(reserva1));
         assertTrue(reservas.contains(reserva2));
         assertEquals(2, reservas.size());
